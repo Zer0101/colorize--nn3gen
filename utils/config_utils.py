@@ -29,7 +29,7 @@ def init_configs(flags):
     if flags.images_input is None:
         raise ValueError("Path to images must be specified")
     config.inputs = flags.images_input
-    config.output_format = flags.images_input_format
+    config.input_format = flags.images_input_format
 
     config.save_images = flags.images_output_enable is not None
     config.outputs = flags.images_output
@@ -65,7 +65,6 @@ def init_configs(flags):
             raise ValueError("When training continue, path to model must be specified")
 
     config.model_fullpath = config.model_dir + '/' + config.id
-    config.save_path = '/'
     if config.save_model:
         config.save_path = config.save_path + '/' + config.id
 

@@ -1,47 +1,39 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-import os
-import sys
-import numpy as np
-import tensorflow as tf
 
+import sys
+import tensorflow as tf
 from utils.image_utils import from_rgb_to_yuv, from_yuv_to_rgb, from_grayscale_to_rgb, from_rgb_to_grayscale
 from utils.file_utils import pipeline, file_list
+from models.colorize import Colorize
 
 
-def init_model(vgg, work_dir='/', train=True, batch_size=1, epochs=None, learning_value=None, learning_step=None, learning_decay=None):
-    batch_size = tf.constant(batch_size, name='batch_size')
+def init_model(config):
+    batch_size = tf.constant(config.batch_size, name='batch_size')
     # Initialize number of epochs - very important and sensitive value
-    epochs = tf.constant(epochs, name='global_epochs')
+    epochs = tf.constant(config.epochs, name='global_epochs')
     # Create global step value. It will change automatically with in tensorflow context
     global_step = tf.Variable(0, name='global_step', trainable=False)
     # Activate learning rate with decay - NN with batch normalization MUST have decaying leaning rate
-    learning_rate = tf.train.exponential_decay(learning_value, global_step,
-                                               learning_step,
-                                               learning_decay, staircase=True)
+    learning_rate = tf.train.exponential_decay(config.learning_rate, global_step,
+                                               config.learning_decay,
+                                               config.learning_decay_step, staircase=True)
     phase_train = tf.placeholder(tf.bool, name='phase_train')
     uv = tf.placeholder(tf.uint8, name='uv')
 
-    # Prepare input data reader and image color transformer
-    image_transformer = ImageTransformer()
-    image_pipeline = Pipeline()
-    file_reader = Files()
-
-    """
-       Next step - work with images
-       -- Creating images pipeline
-       -- Creating grayscale images
-    """
+    paths = []
     try:
-        paths = file_list
+        paths = file_list(config.inputs, config.input_format)
+    except FileNotFoundError as e:
+        print("There is no files to read")
+        exit()
 
-    color_image_rgb = image_pipeline.load(file_reader.glob(work_dir + configs['images']['input']['path']),
-                                          configs['images']['batch_size'], epochs=configs['epochs'])
-    color_image_yuv = image_transformer.from_rgb_to_yuv(color_image_rgb)
-    grayscale_image = image_transformer.from_rgb_to_grayscale(color_image_rgb)
-    grayscale_image_rgb = image_transformer.from_grayscale_to_rgb(grayscale_image)
-    grayscale_image_yuv = image_transformer.from_rgb_to_yuv(grayscale_image_rgb)
+    color_image_rgb = pipeline(paths, config.batch_size, config.epochs)
+    color_image_yuv = from_rgb_to_yuv(color_image_rgb)
+    grayscale_image = from_rgb_to_grayscale(color_image_rgb)
+    grayscale_image_rgb = from_grayscale_to_rgb(grayscale_image)
+    grayscale_image_yuv = from_rgb_to_yuv(grayscale_image_rgb)
     grayscale = tf.concat([grayscale_image, grayscale_image, grayscale_image], 3, 'grayscale_image_tensor')
 
     """
@@ -70,7 +62,7 @@ def init_model(vgg, work_dir='/', train=True, batch_size=1, epochs=None, learnin
     # This pass will is only for first training
     # Every training continuation will use model generated from VGG-16
     try:
-        with open("vgg/tensorflow-vgg16/vgg16.tfmodel", mode='rb') as file:
+        with open(config.vgg, mode='rb') as file:
             print('Loaded VGG-16 model')
             file_content = file.read()
             graph_def.ParseFromString(file_content)
@@ -81,9 +73,9 @@ def init_model(vgg, work_dir='/', train=True, batch_size=1, epochs=None, learnin
     finally:
         sys.stdout.flush()
 
-    tf.import_graph_def(graph_def, input_map={"images": grayscale})
-
+    imported_graph_defs = tf.import_graph_def(graph_def, input_map={"images": grayscale})
     graph = tf.get_default_graph()
+
     with tf.variable_scope('vgg'):
         conv1_2 = graph.get_tensor_by_name("import/conv1_2/Relu:0")
         conv2_2 = graph.get_tensor_by_name("import/conv2_2/Relu:0")
@@ -105,7 +97,7 @@ def init_model(vgg, work_dir='/', train=True, batch_size=1, epochs=None, learnin
     last_layer_yuv = tf.concat(values=[tf.split(axis=3, num_or_size_splits=3,
                                                 value=grayscale_image_yuv)[0], last_layer], axis=3)
     # transform yuv back to RGB
-    last_layer_rgb = image_transformer.from_yuv_to_rgb(last_layer_yuv)
+    last_layer_rgb = from_yuv_to_rgb(last_layer_yuv)
 
     # Calculate the loss
     loss = tf.square(tf.subtract(last_layer, tf.concat(
@@ -118,10 +110,10 @@ def init_model(vgg, work_dir='/', train=True, batch_size=1, epochs=None, learnin
     else:
         loss = (tf.split(axis=3, num_or_size_splits=2, value=loss)[0] + tf.split(axis=3, num_or_size_splits=2,
                                                                                  value=loss)[1]) / 2
-    # Run the optimizer
-    if phase_train is not None:
-        optimizer = tf.train.GradientDescentOptimizer(0.0001)
-        opt = optimizer.minimize(loss, global_step=global_step, gate_gradients=optimizer.GATE_NONE)
+    # # Run the optimizer
+    # if phase_train is not None:
+    #     optimizer = tf.train.GradientDescentOptimizer(0.0001)
+    #     opt = optimizer.minimize(loss, global_step=global_step, gate_gradients=optimizer.GATE_NONE)
 
     # Summaries
     tf.summary.histogram(name="weights1", values=weights["wc1"])
@@ -134,3 +126,7 @@ def init_model(vgg, work_dir='/', train=True, batch_size=1, epochs=None, learnin
     tf.summary.image(name="colorimage", tensor=color_image_rgb, max_outputs=1)
     tf.summary.image(name="pred_rgb", tensor=last_layer_rgb, max_outputs=1)
     tf.summary.image(name="grayscale", tensor=grayscale_image_rgb, max_outputs=1)
+
+    return batch_size, epochs, global_step, learning_rate, phase_train, uv, color_image_rgb, color_image_yuv, \
+           grayscale_image, grayscale_image_rgb, grayscale_image_yuv, grayscale, weights, graph_def, \
+           imported_graph_defs, graph, tensors, model, last_layer, last_layer_yuv, last_layer_rgb, loss

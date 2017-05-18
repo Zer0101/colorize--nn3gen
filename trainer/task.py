@@ -7,12 +7,18 @@ import argparse
 import sys
 import tensorflow as tf
 from utils.config_utils import init_configs
-
+from trainer.train import train
 
 def main(args):
     try:
         config = init_configs(flags=FLAGS)
-        print(config)
+
+        if config.type == 'train':
+            train(config)
+            pass
+        elif config.type == 'predict':
+            pass
+
     except ValueError as e:
         print('Run is finished. Reason:')
         print(e)

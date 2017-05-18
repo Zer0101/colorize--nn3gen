@@ -1,5 +1,5 @@
 import tensorflow as tf
-from app.utils import batch_normalize
+from utils.normalize_utils import batch_normalize
 
 
 class Colorize(object):
