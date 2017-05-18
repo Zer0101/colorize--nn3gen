@@ -28,7 +28,6 @@ def init_model(config):
     except FileNotFoundError as e:
         print("There is no files to read")
         exit()
-    print(paths)
 
     color_image_rgb = pipeline(paths, config.batch_size, config.epochs)
     color_image_yuv = from_rgb_to_yuv(color_image_rgb)
