@@ -5,6 +5,7 @@ from setuptools import setup
 REQUIRED_PACKAGES = [
     'tensorflow==1.0.1',
     'matplotlib==2.0.2',
+    'python-tk==8.6',
 ]
 
 setup(
