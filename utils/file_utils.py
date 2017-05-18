@@ -14,7 +14,7 @@ def file_list(paths, image_format='.jpg'):
 
 def load_rgb(queue, random_crop=True, randomize=False):
     key, file = tf.WholeFileReader().read(queue)
-    uint8_image = tf.image.decode_image(file, channels=3, name='decoded_uint8_image')
+    uint8_image = tf.image.decode_jpeg(file, channels=3, name='decoded_uint8_image')
     if random_crop:
         uint8_image = tf.random_crop(uint8_image, (224, 224, 3))
     if randomize:
@@ -28,6 +28,7 @@ def load_rgb(queue, random_crop=True, randomize=False):
 def pipeline(paths, batch_size=1, epochs=None, min_after_dequeue=100):
     if paths is None:
         pass
+
     queue = tf.train.string_input_producer(paths, num_epochs=epochs, shuffle=False)
     files = load_rgb(queue, randomize=False)
     capacity = min_after_dequeue + 3 * batch_size

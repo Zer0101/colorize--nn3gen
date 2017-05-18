@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import os
 import sys
 import numpy as np
@@ -8,8 +12,6 @@ from utils.image_utils import concat_images
 
 
 def train(configs):
-    print(configs)
-    print(configs.save_path)
     if configs.save_model is not None and configs.save_model:
         if not os.path.exists(configs.save_path):
             os.makedirs(configs.save_path)
@@ -90,12 +92,12 @@ def train(configs):
                     if configs.output_save_step is not None \
                             and step % configs.output_save_step == 0:
                         print("Saving images...")
-                        images_format = configs['images']['output']['format']
+                        images_format = configs.output_format
                         summary_image = concat_images(grayscale_image_rgb_[0], last_layer_rgb_[0])
                         summary_image = concat_images(summary_image, color_image_rgb_[0])
 
                         step_prefix = str(step)
-                        image_name_prefix = configs.output_path + step_prefix
+                        image_name_prefix = configs.output_path + '/' + step_prefix
 
                         plt.imsave(image_name_prefix + "_summary" + images_format, summary_image)
                         plt.imsave(image_name_prefix + "_grayscale" + images_format,
@@ -113,8 +115,8 @@ def train(configs):
             if configs.save_model is not None and configs.save_model:
                 if configs.save_model_step is not None and step % configs.save_model_step == 0:
                     print("Saving model...")
-                    saver.save(session, configs.save_path + 'model.ckpt')
-                    print("Model saved in file: %s" % configs.save_path + 'model.ckpt')
+                    saver.save(session, configs.save_path + '/model.ckpt')
+                    print("Model saved in file: %s" % configs.save_path + '/model.ckpt')
                     sys.stdout.flush()
 
     # Wait for threads to finish.

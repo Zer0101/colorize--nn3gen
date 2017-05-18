@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-import distutils.util
 
+import distutils.util
 import argparse
 import sys
 import tensorflow as tf
@@ -31,7 +31,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--vgg', type=str, default="vgg/tensorflow-vgg16/vgg16.tfmodel",
+    parser.add_argument('--vgg', type=str, default="../vgg/tensorflow-vgg16/vgg16.tfmodel",
                         help='Contains path to vgg-16 model')
     parser.add_argument('--model_id', '-m', type=str, help='UID of the trained NN model')
     parser.add_argument('--model_dir', type=str, default='assets/models', help='Path to directory with models')

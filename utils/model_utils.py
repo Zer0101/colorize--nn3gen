@@ -28,6 +28,7 @@ def init_model(config):
     except FileNotFoundError as e:
         print("There is no files to read")
         exit()
+    print(paths)
 
     color_image_rgb = pipeline(paths, config.batch_size, config.epochs)
     color_image_yuv = from_rgb_to_yuv(color_image_rgb)
@@ -36,9 +37,7 @@ def init_model(config):
     grayscale_image_yuv = from_rgb_to_yuv(grayscale_image_rgb)
     grayscale = tf.concat([grayscale_image, grayscale_image, grayscale_image], 3, 'grayscale_image_tensor')
 
-    """
-        Initializing tensor with weights
-    """
+    # Initializing tensor with weights
     weights = {
         # 1x1 convolution, 512 inputs, 256 outputs
         'wc1': tf.Variable(tf.truncated_normal([1, 1, 512, 256], stddev=0.01)),
