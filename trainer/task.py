@@ -6,10 +6,21 @@ import distutils.util
 import argparse
 import sys
 import tensorflow as tf
+from utils.config_utils import init_configs
 
 
 def main(args):
-    print(FLAGS)
+    try:
+        config = init_configs(flags=FLAGS)
+        print(config)
+    except ValueError as e:
+        print('Run is finished. Reason:')
+        print(e)
+        exit()
+    except Exception as e:
+        print('Run is finished. Reason:')
+        print(e)
+        exit()
 
 
 if __name__ == '__main__':
@@ -17,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--vgg', type=str, default="vgg/tensorflow-vgg16/vgg16.tfmodel",
                         help='Contains path to vgg-16 model')
     parser.add_argument('--model_id', '-m', type=str, help='UID of the trained NN model')
+    parser.add_argument('--model_dir', type=str, default='assets/models', help='Path to directory with models')
     parser.add_argument('--type', type=str, default='train',
                         help='Mode of work for this application (train or colorize)')
     """
@@ -39,6 +51,7 @@ if __name__ == '__main__':
     parser.add_argument('--images_batch_size', type=int, default=1,
                         help='Number of images in batch. Can affect performance')
     parser.add_argument('--images_input', type=str, help='Path to directory with training samples')
+    parser.add_argument('--images_input_format', type=str, default='.jpg', help='Input images format')
     parser.add_argument('--images_output_enable', default='false', type=distutils.util.strtobool,
                         help='Enable/disable image saving in process of training')
     parser.add_argument('--images_output_step', type=int, default=10, help='Indicates step for images saving')
