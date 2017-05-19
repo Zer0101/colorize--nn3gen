@@ -25,7 +25,7 @@ def init_model(config):
     paths = []
     try:
         paths = file_list(config.inputs, config.input_format)
-    except FileNotFoundError as e:
+    except IOError as e:
         print("There is no files to read")
         exit()
 
@@ -65,7 +65,7 @@ def init_model(config):
             file_content = file.read()
             graph_def.ParseFromString(file_content)
             file.close()
-    except FileNotFoundError as e:
+    except IOError as e:
         print('Cannot find VGG-16 model. Training is stopped')
         exit()
     finally:

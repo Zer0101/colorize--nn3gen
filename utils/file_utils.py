@@ -7,7 +7,7 @@ def file_list(paths, image_format='.jpg'):
     filenames = sorted(glob.glob(paths + '/*' + image_format))
 
     if not filenames:
-        raise FileNotFoundError("Files not found!")
+        raise IOError("Files not found!")
 
     return filenames
 
