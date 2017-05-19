@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import sys
 import tensorflow as tf
+from tensorflow.python.lib.io import file_io
 from utils.image_utils import from_rgb_to_yuv, from_yuv_to_rgb, from_grayscale_to_rgb, from_rgb_to_grayscale
 from utils.file_utils import pipeline, file_list
 from models.colorize import Colorize
@@ -60,7 +61,7 @@ def init_model(config):
     # This pass will is only for first training
     # Every training continuation will use model generated from VGG-16
     try:
-        with open(config.vgg, mode='rb') as file:
+        with file_io.FileIO(config.vgg, mode='rb') as file:
             print('Loaded VGG-16 model')
             file_content = file.read()
             graph_def.ParseFromString(file_content)
