@@ -19,6 +19,8 @@ from setuptools.command.install import install
 
 
 class CustomCommands(install):
+  description = "run a custom compile command"
+  user_options = tuple()
   """A setuptools Command class able to run arbitrary commands."""
 
   def RunCustomCommand(self, command_list):
