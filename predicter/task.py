@@ -7,7 +7,7 @@ import argparse
 import sys
 import tensorflow as tf
 from utils.config_utils import init_configs
-from trainer.train import train
+from predicter.predict import train
 
 def main(args):
     try:
@@ -37,6 +37,9 @@ if __name__ == '__main__':
     parser.add_argument('--model_dir', type=str, default='assets/models', help='Path to directory with models')
     parser.add_argument('--type', type=str, default='train',
                         help='Mode of work for this application (train or colorize)')
+    """
+        CLI arguments for training the model
+    """
     parser.add_argument('--continue', '-c', type=distutils.util.strtobool, default='false',
                         help='Change this value to continue train existing model')
     parser.add_argument('--model_learning_rate', type=float, default=0.01, help='Initial learning rate.')
@@ -49,6 +52,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_save_pass', type=int, default=100,
                         help='Numbers of steps to save model in process of work')
     parser.add_argument('--model_save_path', type=str, help='Path where will be saved trained model')
+    parser.add_argument('--model_log_level', type=int, default=1, help='Enable/disable logging of model train process')
     parser.add_argument('--model_log_dir', type=str, help='Path to log directory')
     parser.add_argument('--images_batch_size', type=int, default=1,
                         help='Number of images in batch. Can affect performance')
