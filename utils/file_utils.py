@@ -4,7 +4,8 @@ import tensorflow as tf
 
 def file_list(paths, image_format='.jpg'):
     # Get names of training cases - sample files
-    filenames = sorted(tf.gfile.Glob(paths + '/*' + image_format))
+    print("Files will be loaded from: \"" + paths + '*' + image_format + "\"")
+    filenames = sorted(tf.gfile.Glob(paths + '*' + image_format))
 
     if not filenames:
         raise IOError("Files not found!")

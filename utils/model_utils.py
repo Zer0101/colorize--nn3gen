@@ -61,8 +61,9 @@ def init_model(config):
     # This pass will is only for first training
     # Every training continuation will use model generated from VGG-16
     try:
-        with file_io.FileIO(config.vgg, mode='rb') as file:
-            print('Loaded VGG-16 model')
+        print("Loading VGG-16 model")
+        with file_io.FileIO(config.vgg, mode='r') as file:
+            print('VGG-16 model is Loaded')
             file_content = file.read()
             graph_def.ParseFromString(file_content)
             file.close()
