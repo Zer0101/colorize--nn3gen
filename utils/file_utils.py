@@ -1,11 +1,12 @@
 import glob
 import tensorflow as tf
+from tensorflow.python.lib.io import file_io
 
 
 def file_list(paths, image_format='.jpg'):
     # Get names of training cases - sample files
     print("Files will be loaded from: \"" + paths + '*' + image_format + "\"")
-    filenames = sorted(tf.gfile.Glob(paths + '*' + image_format))
+    filenames = sorted(file_io.get_matching_files(paths + '*' + image_format))
 
     if not filenames:
         raise IOError("Files not found!")
